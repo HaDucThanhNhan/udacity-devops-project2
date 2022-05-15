@@ -1,0 +1,17 @@
+[{
+  "ParameterKey": "EnvironmentName",
+  "ParameterValue": "Udagram2022"
+},
+{
+  "ParameterKey": "S3BucketAppName",
+  "ParameterValue": "udagram-bucket-app-1839260"
+},
+{
+  "ParameterKey": "S3BucketKeyName",
+  "ParameterValue": "udagram-bucket-ssh-1839260"
+},
+{
+  "ParameterKey": "S3BucketLogsName",
+  "ParameterValue": "udagram-bucket-log-1839260"
+}
+]

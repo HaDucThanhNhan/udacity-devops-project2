@@ -1,0 +1,127 @@
+Description: >
+  NhanHDT1 - Udacity 2022
+  AWS-CloudFormation: S3 infrastructure
+
+### Parameters ###
+Parameters:
+  EnvironmentName:
+    Description: An environment name that will be prefixed to resource names.
+    Type: String
+    Default: Udagram2022
+
+  S3BucketAppName:
+    Description: A Bucket where place app udagram.html
+    Type: String 
+
+  S3BucketKeyName:
+    Description: A Bucket where place key.
+    Type: String
+
+  S3BucketLogsName:
+    Description: A Bucket where place log
+    Type: String
+
+
+############################### Resources #################################
+Resources:
+  ## App Bucket
+  S3WebApp:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref S3BucketAppName
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+    DeletionPolicy: Delete
+
+  S3WebAppPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3WebApp
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action: 's3:*'
+            Resource: !Join ['', ['arn:aws:s3:::', !Ref 'S3WebApp', '/*']]
+            Principal: '*'
+
+  ## KeyPair Bucket ##
+  S3KeyPair:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref S3BucketKeyName
+      AccessControl: Private
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+    DeletionPolicy: Retain
+
+  S3KeyPairPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3KeyPair
+      PolicyDocument:
+        Statement:
+          - Sid: AllowStaticObjectDownload
+            Action: 's3:GetObject'
+            Effect: Allow
+            Resource: !Join ['', ['arn:aws:s3:::', !Ref 'S3KeyPair', '/*']]
+            Principal:
+              AWS: '*'
+          - Sid: PutObjectAccess
+            Action: 's3:PutObject'
+            Effect: Allow
+            Resource: !Join ['', ['arn:aws:s3:::', !Ref 'S3KeyPair', '/*']]
+            Principal: '*'
+
+  ## Logs Bucket
+  S3Logs:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: Private
+      BucketName: !Ref S3BucketLogsName
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+    DeletionPolicy: Retain
+
+  S3LogsPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3Logs
+      PolicyDocument:
+        Statement:
+          - Sid: AllowStaticObjectDownload
+            Action: 's3:GetObject'
+            Effect: Allow
+            Resource: !Join ['', ['arn:aws:s3:::', !Ref 'S3Logs', '/*']]
+            Principal: '*'
+          - Sid: PutObjectAccess
+            Action: 's3:PutObject'
+            Effect: Allow
+            Resource: !Join ['', ['arn:aws:s3:::', !Ref 'S3Logs', '/*']]
+            Principal: '*'
+
+############################### Outputs #################################
+Outputs:
+  WebsiteURL:
+    Value: !GetAtt [S3WebApp, WebsiteURL]
+    Description: URL for website hosted on S3
+  WebsiteSecureURL:
+    Value: !Join ['', ['http://', !GetAtt [S3WebApp, DomainName]]]
+    Description: Secure URL for website hosted on S3
+  S3KeyPair:
+    Value: !GetAtt [S3KeyPair, WebsiteURL]
+    Description: URL for key hosted on S3
+  S3KeyPairSecureURL:
+    Value: !Join ['', ['http://', !GetAtt [S3KeyPair, DomainName]]]
+    Description: Secure URL for key hosted on S3
+  S3Logs:
+    Value: !GetAtt [S3Logs, DomainName]
+    Description: URL for logs hosted on S3
+    Export:
+      Name: !Sub ${EnvironmentName}-S3-LOGS
+  S3LogsURL:
+    Value: !Join ['', ['http://', !GetAtt [S3Logs, DomainName]]]
+    Description: Secure URL for logs hosted on S3
